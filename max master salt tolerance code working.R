@@ -10,6 +10,7 @@ library(cowplot)
 #also, the greenhouse experiment is done first in the code, then soil salinity, 
 #set correct folder
 setwd("~/JHU Stuff/research/Avolio lab/salt tolerance 2024 (senior thesis)/data")
+#test
 
 #read in seed collection information
 collectiondata<-read.csv("final collection measurements.csv") %>% 
