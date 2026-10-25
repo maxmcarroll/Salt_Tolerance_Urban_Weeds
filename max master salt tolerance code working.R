@@ -507,7 +507,7 @@ b<-ggplot(data=tograph, aes(x=park, y=germdiff, fill=park))+
   scale_fill_manual(name="", labels=c("Park", 'Road Verge'), values = c("#66CC66", "#333333"))+
   scale_x_discrete(labels=c('Park', 'Road Verge'))+
   xlab('')+
-  ylab("% Germination in Salt\nRelative to Control")+
+  ylab("Proportion that Germinated\nin Salt Relative to Control")+
   theme_bw(base_size=8)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
         legend.position = "none",
