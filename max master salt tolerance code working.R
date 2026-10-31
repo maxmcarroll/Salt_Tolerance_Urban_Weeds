@@ -1,16 +1,13 @@
-library(lme4)
-library(lmerTest)
 library(tidyverse)
 library(ggplot2)
-library(dplyr)
-library(car)
 library(cowplot)
 
 #note to reader -- initially we used "location" to refer to roadside collection environment or park collection environment. "street" was also used initially for the roadside collection environment and revised for clarity later.
-#also, the greenhouse experiment is done first in the code, then soil salinity, 
+#code order: greenhouse experiment, soil salinity, supplementary information, germination experiment
+
+#greenhouse analysis
 #set correct folder
 setwd("~/JHU Stuff/research/Avolio lab/salt tolerance 2024 (senior thesis)/data")
-#test
 
 #read in seed collection information
 collectiondata<-read.csv("final collection measurements.csv") %>% 
@@ -26,7 +23,7 @@ meas1<-measurements %>%
   mutate(dead.=ifelse(dead.=='daed', 'dead', dead.)) %>% 
   select(Species, Lines.ID..expanded., Treatment, Replicate, dead., X8.21:X11.15, Line.ID) 
 
-#selects only Veronica arvensis (VA) plants from the experimental data, removes the last date (all VA were harvested before then), makes a new row for each weekly measurement of each plant, turns calendar date into days since beginning of experiment, cleans condition (health), and removes date and uncleaned condition
+#selects only Veronica arvensis (VA) plants from the experimental data, removes the last date (all VA were harvested before then), makes a new row for each weekly measurement of each plant, turns calendar date into days since beginning of experiment, cleans condition (i.e. plant health measured by visual tissue damage), and removes date and uncleaned condition
 va<-meas1 %>% 
   filter(Species=='VA') %>% 
   select(-X11.15) %>% 
@@ -105,7 +102,7 @@ VAmeans<-means %>%
            Location=="Street"~mcond+se+.2
          ))
 
-#graphs VA health across time. different lines for each of the four factorial groups
+#graphs VA condition across time. different lines for each of the four factorial groups
 VAgraph <- ggplot(VAmeans, aes(x=day,y=mcond, 
   color = factor(interaction(Treatment, Location),
                  levels = c("W.Street", "W.Park", "S.Street", "S.Park")),
@@ -198,7 +195,7 @@ VA1011survivalrategraph<-ggplot(VA1011surviverates, aes(x=factor(Treatment, leve
 
 print(VA1011survivalrategraph)
 
-#combined survival rate and experimerimental condition figure for VA
+#combined survival rate and experimental condition figure for VA
 VAbothgraphs<-plot_grid(VA1011survivalrategraph,VAgraph,rel_widths=c(2,4),ncol=2)
 print(VAbothgraphs)
 ggsave(filename="C:/Users/maxmc/OneDrive/Documents/JHU Stuff/research/Avolio lab/salt tolerance 2024 (senior thesis)/manuscripts/figures/VAdoublegraph.tiff",plot=VAbothgraphs,width=8,height=4,dpi=600)
@@ -207,7 +204,8 @@ ggsave(filename="C:/Users/maxmc/OneDrive/Documents/JHU Stuff/research/Avolio lab
 LPmeans<-means%>%
   filter(Species == "LP")
 
-#LP condition means for roadside and park. significance groups added for labeling. we did one graph divided by collection environment and one graph divided by treatment for figure clarity, since our observations are less clear in the four-group graph
+#LP condition means for roadside and park. significance groups added from SAS results added for labeling. 
+#we used one graph divided by collection environment and one graph divided by treatment for figure clarity, since our observations are less clear in the four-group graph
 LPlocmeans<-alldat %>% 
   filter(Species == "LP") %>%
   group_by(Location, day) %>% 
@@ -246,7 +244,7 @@ LPlocgraph<-ggplot(LPlocmeans, aes(
 
 print(LPlocgraph)
 
-#LP condition means for salt and water. significance groups added for labeling
+#LP condition means for salt and water. significance groups from SAS results added for labeling
 LPtrtmeans<-alldat %>% 
   filter(Species == "LP") %>%
   group_by(Treatment, day) %>% 
@@ -330,7 +328,7 @@ LP1108survivalrategraph<-ggplot(LP1108surviverates, aes(x=factor(Treatment, leve
 
 print(LP1108survivalrategraph)
 
-#survival, condition by treatment, and condition by collection environment graphs
+#survival, condition by treatment, and condition by collection environment graphs for LP
 LPthreegraphs<-plot_grid(LP1108survivalrategraph,LPtrtgraph,LPlocgraph,ncol=3)
 print(LPthreegraphs)
 ggsave(filename="C:/Users/maxmc/OneDrive/Documents/JHU Stuff/research/Avolio lab/salt tolerance 2024 (senior thesis)/manuscripts/figures/LPtriplegraph.tiff",plot=LPthreegraphs,width=8,height=4,dpi=600)
@@ -405,13 +403,12 @@ print(saltgraph)
 ggsave(filename="C:/Users/maxmc/OneDrive/Documents/JHU Stuff/research/Avolio lab/salt tolerance 2024 (senior thesis)/manuscripts/figures/narrowsaltgraph.tiff",plot=saltgraph,width=6,height=6.5,dpi=600)
 
 #germination analysis
-library(gridExtra)
 library(ggpubr)
 theme_set(theme_bw(12))
 
 setwd("~/JHU Stuff/research/Avolio lab/salt tolerance 2024 (senior thesis)/Jenny's files/Pilot Study/data")
 
-#clean germination dataset. here, "V" refers to roadside (road verge) and "P" refers to "park"
+#clean germination dataset. here, "V" refers to roadside (V from road verge) and "P" refers to "park"
 dat<-read.csv("salt_germination_pilot_data.csv") %>% 
   filter(species!='TO'&species!='LS') %>% 
   filter(maternal_line %in% c('control', 'ultra-low'))
@@ -426,7 +423,7 @@ summary<-dat %>%
   group_by(site, management_type, species) %>% 
   summarise(n=length(ID))
 
-#LP survival rates
+#LP germination rates
 lamium<-dat %>% 
   filter(species=="LAPU") %>% 
   mutate(park=ifelse(management_type=="P", "Park", "Verge")) %>% 
@@ -461,7 +458,7 @@ Scontrol<-stellaria %>%
   rename(cgerm=germ) %>% 
   select(-salt_treatment)
 
-#how many SM germinated in the salt group divided by how many germinated in the control group. the percentages we noted as trends in the result sections are 
+#how many SM germinated in the salt group divided by how many germinated in the control group
 spdiff<-stellaria %>% 
   left_join(Scontrol) %>% 
   mutate(germdiff=(germ)/cgerm) %>% 
@@ -516,7 +513,7 @@ b<-ggplot(data=tograph, aes(x=park, y=germdiff, fill=park))+
   ggtitle('(b)')
 b
 
-#merge and print germination figure
+#merge and print germination figure (both species)
 germfig<-ggarrange(a,b, common.legend = T, ncol = 1)
 germfig
 ggsave(filename="C:/Users/maxmc/OneDrive/Documents/JHU Stuff/research/Avolio lab/salt tolerance 2024 (senior thesis)/manuscripts/figures/abgermfig.tiff",plot=germfig,width=5,height=4,units="in",dpi=600)
